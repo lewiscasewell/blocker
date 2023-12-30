@@ -6,6 +6,7 @@ message Block {
     Header header = 1;
     repeated Transaction transactions = 2;
 }
+
 message Header {
     int32 version = 1;
     int32 height = 2;
@@ -13,5 +14,24 @@ message Header {
     bytes merkle_root = 4;
     int64 timestamp = 5;
 }
-message Transaction {}
+
+message TxInput {
+    // the previous hash of the transaction containing the output we want to spend
+    bytes prev_tx_hash = 1;
+    // the index of the output of the previous transaction we want to spend
+    uint32 prev_tx_index = 2;
+    bytes public_key = 3;
+    bytes signature = 4;
+}
+
+message TxOutput {
+    int64 amount = 1;
+    bytes address = 2;
+}
+
+message Transaction {
+    int32 version = 1;
+    repeated TxInput inputs = 2;
+    repeated TxOutput outputs = 3;
+}
 
