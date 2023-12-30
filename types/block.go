@@ -8,7 +8,7 @@ import (
 	"github.com/lewiscasewell/blocker/proto"
 )
 
-func SignBlock(pk *crypto.PrivateKey, b *proto.Block) *crypto.Signature {
+func SignBlock(pk *crypto.PrivateKey, b *proto.Block) crypto.Signature {
 	return pk.Sign(HashBlock(b))
 }
 
