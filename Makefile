@@ -1,7 +1,10 @@
+run:
+	go run main.go
+
 build:
 	go build -o bin/blocker
 
-run: build
+start: build
 	./bin/blocker
 
 test:

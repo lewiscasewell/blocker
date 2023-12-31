@@ -2,10 +2,7 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
-	"net"
-	"time"
 
 	"github.com/lewiscasewell/blocker/node"
 	"github.com/lewiscasewell/blocker/proto"
@@ -13,29 +10,27 @@ import (
 )
 
 func main() {
-	node := node.NewNode()
+	makeNode(":4000", []string{})
+	makeNode(":4001", []string{":4000"})
 
-	opts := []grpc.ServerOption{}
-	grpcServer := grpc.NewServer(opts...)
-	ln, err := net.Listen("tcp", ":8080")
-	if err != nil {
-		log.Fatal(err)
-	}
-	proto.RegisterNodeServer(grpcServer, node)
-	fmt.Println("node running on port 8080")
+	select {}
+}
 
-	go func() {
-		for {
-			time.Sleep(2 * time.Second)
-			mainTransaction()
+func makeNode(listenAddr string, bootstrapNodes []string) *node.Node {
+	n := node.NewNode()
+
+	go n.Start(listenAddr)
+	if len(bootstrapNodes) > 0 {
+		if err := n.BootstrapNetwork(bootstrapNodes); err != nil {
+			log.Fatal(err)
 		}
-	}()
+	}
 
-	grpcServer.Serve(ln)
+	return n
 
 }
 
-func mainTransaction() {
+func makeTransaction() {
 	client, err := grpc.Dial("localhost:8080", grpc.WithInsecure())
 	if err != nil {
 		log.Fatal(err)
@@ -45,8 +40,9 @@ func mainTransaction() {
 	c := proto.NewNodeClient(client)
 
 	version := &proto.Version{
-		Version: "blocker-0.0.1",
-		Height:  1,
+		Version:    "blocker-0.0.1",
+		Height:     1,
+		ListenAddr: ":4000",
 	}
 
 	_, err = c.Handshake(context.TODO(), version)
